@@ -3,3 +3,5 @@ This guide covers the information you need to deploy the {partner-product-name} 
 // For advanced information about the product, troubleshooting, or additional functionality, refer to the https://{partner-solution-github-org}.github.io/{partner-solution-project-name}/operational/index.html[Operational Guide^].
 
 // For information about using this Partner Solution for migrations, refer to the https://{partner-solution-github-org}.github.io/{partner-solution-project-name}/migration/index.html[Migration Guide^].
+
+This guide provides instructions for deploying the TDengine Enterprise Quick Start reference architecture on the AWS Cloud. This Quick Start provides a nearly continuous deployment foundation for AWS Cloud infrastructures. It deploys the TDengine Time-Series database with cluster mode enabled, a developer-based view of software delivery, according to AWS best practices and guidelines with scalable and high-available architecture design. It is target agnostic, so teams can deploy their code at scale using a single path to production. For more information, see https://docs.tdengine.com/deployment/[TDengine Docs^].

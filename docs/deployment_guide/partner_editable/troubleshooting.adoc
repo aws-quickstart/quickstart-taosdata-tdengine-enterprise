@@ -4,3 +4,28 @@ For troubleshooting common Partner Solution issues, refer to the https://fwd.aws
 
 // == Resources
 // Uncomment section and add links to any external resources that are specified by the partner.
+
+*Q.* I encountered a *CREATE_FAILED* error when I launched the Quick Start.
+
+*A.* If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with *Rollback on failure* set to *Disabled*. (This setting is under *Advanced* in the AWS CloudFormation console, *Options* page.) With this setting, the stack’s state is retained, and instances remain running so you can troubleshoot the issue.
+
+IMPORTANT: When you set *Rollback on failure* to *Disabled*, you continue to incur AWS charges for the stack. Ensure that you delete the stack when you finish troubleshooting.
+
+For more information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting AWS CloudFormation^].
+
+*Q.* A resource type starting with *AWSQS::* failed on stack create, update, or deletion.
+
+*A.* These resources are AWS CloudFormation registry resource types created by the Quick Start. Logs for it are stored in Amazon CloudWatch Logs with a group prefix of */cloudformation/registry/awsqs-*.
+
+*Q.* I encountered a size limitation error when I deployed the AWS CloudFormation templates.
+
+*A.* Launch the Quick Start templates from the links in this guide or from another S3 bucket. If you deploy the templates from a local copy on your computer, or from a location other than Amazon S3, you might encounter template size limitations when you create the stack. For more information, see http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html[AWS CloudFormation quotas^].
+
+*Q.* Dnodes hasn't been launched.
+
+*A.* We recommend you don't ssh into EC2 instances while initializing.
+
+*Q.* How to deploy in China Region.
+
+*A.* We provide sperated deploy template for CN region. Please refer to github CN template.
+

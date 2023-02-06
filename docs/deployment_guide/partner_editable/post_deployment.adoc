@@ -1,0 +1,5 @@
+// Include any postdeployment steps here, such as steps necessary to test that the deployment was successful. If there are no postdeployment steps, leave this file empty.
+
+== Postdeployment steps
+
+To get start to use TDengine with testing data sets, you may refer to https://docs.tdengine.com/get-started/docker/#test-data-insert-performance[TDengine taosBenchmark^] as well as https://docs.tdengine.com/get-started/docker/#run-tdengine[Run TDengine^]

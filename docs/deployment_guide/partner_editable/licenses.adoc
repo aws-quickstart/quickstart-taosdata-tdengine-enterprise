@@ -1,0 +1,3 @@
+// Include details about any licenses and how to sign up. Provide links as appropriate.
+
+The TDengine Quick Start is free to try with embeded 15 days license. To obtain an official license or extend trial period, please contact https://www.taosdata.com/products#enterprise-edition-link[Taos Data^] or subscribe in AWS https://awsmarketplace.amazonaws.cn/marketplace/pp/prodview-efx3sibujybje?qid=1665970268563&sr=0-1&ref_=srh_res_product_title[Marketplace^].

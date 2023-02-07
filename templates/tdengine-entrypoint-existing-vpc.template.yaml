@@ -37,9 +37,9 @@ Metadata:
 
     ParameterLabels:
       paramBucketName: 
-        default: S3 Bucket for DataTiering, By default, deploy two data tiering includes local ssd & s3 bucket.
+        default: S3 Bucket for DataTiering. By default, deploy ssd & s3 bucket two data tiering.
       EntDownlaodLink:
-        default: Enterprise Download Link
+        default: Enterprise download link
       PublicSubnet1:
         default: Public subnet 1 ID
       PublicSubnet2:
@@ -67,7 +67,7 @@ Metadata:
 
 Parameters:
   EntDownlaodLink:
-    Description: Enterprise install package download link. If you have not, please contact https://www.taosdata.com/products#enterprise-edition-link
+    Description: Enterprise install package download link. If you have not, please contact https://www.taosdata.com/products#enterprise-edition-link .
     Type: String
   
   paramBucketName:
@@ -255,6 +255,7 @@ Resources:
   RedisReplicationGroup:
     Type: AWS::ElastiCache::ReplicationGroup
     Properties:
+      AtRestEncryptionEnabled: true
       ReplicationGroupDescription: RedisJuiceFSReplicationGroup
       AutomaticFailoverEnabled: true
       NumCacheClusters: 2
@@ -268,7 +269,7 @@ Resources:
         - !GetAtt InternalSecurityGroup.GroupId
   
   S3Bucket:    
-    Type: 'AWS::S3::Bucket'    
+    Type: 'AWS::S3::Bucket'
     Properties:      
       AccessControl: BucketOwnerFullControl      
       BucketName: !Ref paramBucketName      
@@ -289,6 +290,8 @@ Resources:
             - ec2.amazonaws.com
           Action:
           - 'sts:AssumeRole'
+      ManagedPolicyArns: 
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore 
       Path: /
       Policies:
       - PolicyName: TDengineIAMPolicy
@@ -296,19 +299,28 @@ Resources:
           Version: "2012-10-17"
           Statement:
           - Effect: Allow
-            Action: 'ec2:DescribeInstances'
+            Action: 
+              - 'ec2:CreateTags'
+            Resource: !Sub arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:instance/*
+          - Effect: Allow
+            Action:
+              - 'ec2:DescribeInstances'
             Resource: '*'
           - Effect: Allow
-            Action: 'ec2:CreateTags'
-            Resource: '*'
-          - Effect: Allow
-            Action: 'ec2-instance-connect:SendSSHPublicKey'
-            Resource: '*'
-          - Effect: Allow
-            Action: 's3:*'
+            Action: 
+              - 's3:DeleteObject'
+              - 's3:GetObject'
+              - 's3:GetObjectAttributes'
+              - 's3:PutObject'
             Resource: 
-              - !Sub arn:aws:s3:::${S3Bucket}                
-              - !Sub arn:aws:s3:::${S3Bucket}/*
+              - !Sub arn:${AWS::Partition}:s3:::${S3Bucket}                
+              - !Sub arn:${AWS::Partition}:s3:::${S3Bucket}/*
+          - Effect: Allow
+            Action: 'ssm:SendCommand'
+            Resource: 
+              - !Sub arn:${AWS::Partition}:ssm:*:*:document/*
+              - !Sub arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:instance/*
+
 
   TDengineIAMProfile:
     Type: 'AWS::IAM::InstanceProfile'
@@ -351,18 +363,19 @@ Resources:
             chown -R ec2-user:ec2-user /TDengine
             touch {localip,log}
 
-            yum -y install ec2-instance-connect jq sed
+            yum -y install jq sed
             curl -s https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip
             unzip awscliv2.zip; ./aws/install; rm -Rf aws
 
             curl -s http://169.254.169.254/latest/meta-data/local-ipv4 > /TDengine/localip
+
+            curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_32bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+            yum install -y session-manager-plugin.rpm
+
             region=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq .region -r`
 
             mkdir -p /var/lib/s3/taos
-            JFS_LATEST_TAG=`curl -s https://api.github.com/repos/juicedata/juicefs/releases/latest | grep 'tag_name' | cut -d '"' -f 4 | tr -d 'v'`
-            wget "https://github.com/juicedata/juicefs/releases/download/v$JFS_LATEST_TAG/juicefs-$JFS_LATEST_TAG-linux-amd64.tar.gz"
-            mkdir juice && tar -zxvf "juicefs-$JFS_LATEST_TAG-linux-amd64.tar.gz" -C juice
-            sudo install juice/juicefs /usr/bin
+            curl -sSL https://d.juicefs.com/install | sh -
 
             juicefs format \
                 --storage s3 \
@@ -370,7 +383,7 @@ Resources:
                 redis://${RedisReplicationGroup.PrimaryEndPoint.Address}:6379/1 \
                 taosdata
 
-            sudo juicefs mount -d redis://${RedisReplicationGroup.PrimaryEndPoint.Address}:6379/1  /var/lib/s3/taos
+            juicefs mount -d redis://${RedisReplicationGroup.PrimaryEndPoint.Address}:6379/1  /var/lib/s3/taos
 
             # install TDengine
             su ec2-user <<EOSU
@@ -480,26 +493,22 @@ Resources:
                 continue
               fi
 
-              az=`aws ec2 describe-instances \
-            --region $region \
-            --filters "Name=instance-id,Values=$instance" \
-            --query 'Reservations[*].Instances[*].{AZ:Placement.AvailabilityZone}' \
-            --output text`
+            tdenginepk=`cat /TDengine/tdengine_key.pub`
+            aws ssm send-command \
+              --document-name "AWS-RunShellScript" \
+              --instance-ids $instance \
+              --region $region \
+              --max-errors "5" \
+              --parameters "commands=['echo $tdenginepk >> /home/ec2-user/.ssh/authorized_keys']"
+            sleep 10
 
-              aws ec2-instance-connect send-ssh-public-key \
-            --region $region --instance-id $instance \
-            --availability-zone $az \
-            --instance-os-user ec2-user \
-            --ssh-public-key file:///TDengine/tdengine_key.pub
-
-              ip=`aws ec2 describe-instances \
+            ip=`aws ec2 describe-instances \
             --region $region --filters \
             "Name=instance-id,Values=$instance" \
             --query 'Reservations[*].Instances[*].[PrivateIpAddress]' \
             --output text`
 
             su ec2-user <<EOSU
-              scp -i /TDengine/tdengine_key -o 'StrictHostKeyChecking=no' /TDengine/tdengine_key.pub $ip:/home/ec2-user/.ssh/
               ssh -i /TDengine/tdengine_key -o 'StrictHostKeyChecking=no' $ip \
               "cat /home/ec2-user/.ssh/tdengine_key.pub >> /home/ec2-user/.ssh/authorized_keys" < /dev/null
 

@@ -13,10 +13,6 @@ IMPORTANT: When you set *Rollback on failure* to *Disabled*, you continue to inc
 
 For more information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting AWS CloudFormation^].
 
-*Q.* A resource type starting with *AWSQS::* failed on stack create, update, or deletion.
-
-*A.* These resources are AWS CloudFormation registry resource types created by the Quick Start. Logs for it are stored in Amazon CloudWatch Logs with a group prefix of */cloudformation/registry/awsqs-*.
-
 *Q.* I encountered a size limitation error when I deployed the AWS CloudFormation templates.
 
 *A.* Launch the Quick Start templates from the links in this guide or from another S3 bucket. If you deploy the templates from a local copy on your computer, or from a location other than Amazon S3, you might encounter template size limitations when you create the stack. For more information, see http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html[AWS CloudFormation quotas^].
@@ -27,5 +23,5 @@ For more information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/U
 
 *Q.* How to deploy in China Region.
 
-*A.* We provide sperated deploy template for CN region. Please refer to github CN template.
+*A.* China region use the same templates.
 

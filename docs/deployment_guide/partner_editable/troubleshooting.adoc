@@ -19,9 +19,12 @@ For more information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/U
 
 *Q.* Dnodes hasn't been launched.
 
-*A.* We recommend you don't ssh into EC2 instances while initializing.
+*A.* We recommend you do not ssh into EC2 instances while EC2 status is under initializing status.
 
 *Q.* How to deploy in China Region.
 
 *A.* China region use the same templates.
 
+*Q.* A resource type starting with *S3::* failed on stack deletion.
+
+*A.* You may empty data in S3 bucket first before delete deployed stack or delete the bucket mananually after deleting stack. 

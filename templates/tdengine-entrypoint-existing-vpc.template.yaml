@@ -6,13 +6,13 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
+          default: Global region or China region
+        Parameters:
+          - AWSRegion
+      - Label:
           default: Download Link
         Parameters:
           - EntDownlaodLink
-      - Label:
-          default: S3 configuration
-        Parameters:
-          - paramBucketName
       - Label:
           default: Network Configuration
         Parameters:
@@ -36,8 +36,6 @@ Metadata:
           - NumberOfServers
 
     ParameterLabels:
-      paramBucketName: 
-        default: S3 Bucket for DataTiering. By default, deploy ssd & s3 bucket two data tiering.
       EntDownlaodLink:
         default: Enterprise download link
       PublicSubnet1:
@@ -66,12 +64,14 @@ Metadata:
         default: Number of Servers
 
 Parameters:
+  AWSRegion:
+    Type: String
+    AllowedValues:
+      - amazonaws.com
+      - amazonaws.com.cn
+
   EntDownlaodLink:
     Description: Enterprise install package download link. If you have not, please contact https://www.taosdata.com/products#enterprise-edition-link .
-    Type: String
-  
-  paramBucketName:
-    AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     Type: String
 
   PublicSubnet1:
@@ -267,16 +267,6 @@ Resources:
       MultiAZEnabled: true
       SecurityGroupIds:
         - !GetAtt InternalSecurityGroup.GroupId
-  
-  S3Bucket:    
-    Type: 'AWS::S3::Bucket'
-    Properties:      
-      AccessControl: BucketOwnerFullControl      
-      BucketName: !Ref paramBucketName      
-      BucketEncryption:        
-        ServerSideEncryptionConfiguration:          
-          - ServerSideEncryptionByDefault:              
-              SSEAlgorithm: AES256
 
   TDengineIAMRole:
     Type: 'AWS::IAM::Role'
@@ -312,15 +302,16 @@ Resources:
               - 's3:GetObject'
               - 's3:GetObjectAttributes'
               - 's3:PutObject'
+              - 's3:ListBucket'
+              - 's3:CreateBucket'
             Resource: 
-              - !Sub arn:${AWS::Partition}:s3:::${S3Bucket}                
-              - !Sub arn:${AWS::Partition}:s3:::${S3Bucket}/*
+              - !Sub arn:${AWS::Partition}:s3:::*               
+              - !Sub arn:${AWS::Partition}:s3:::*/*
           - Effect: Allow
             Action: 'ssm:SendCommand'
             Resource: 
               - !Sub arn:${AWS::Partition}:ssm:*:*:document/*
               - !Sub arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:instance/*
-
 
   TDengineIAMProfile:
     Type: 'AWS::IAM::InstanceProfile'
@@ -376,10 +367,13 @@ Resources:
 
             mkdir -p /var/lib/s3/taos
             curl -sSL https://d.juicefs.com/install | sh -
+            yum install fuse -y
+
+            aws s3api create-bucket --bucket `hostname -s` --region $region --create-bucket-configuration LocationConstraint=$region
 
             juicefs format \
                 --storage s3 \
-                --bucket https://${S3Bucket.RegionalDomainName} \
+                --bucket https://`hostname -s`.s3.$region.${AWSRegion} \
                 redis://${RedisReplicationGroup.PrimaryEndPoint.Address}:6379/1 \
                 taosdata
 
@@ -387,6 +381,7 @@ Resources:
 
             # install TDengine
             su ec2-user <<EOSU
+
             SUB='tar.gz'
 
             if [[ "${EntDownlaodLink}" == *"$SUB"* ]]; then
@@ -426,6 +421,7 @@ Resources:
               sed -i '17 a firstEp    '$dnodedns':6030' /etc/taos/taos.cfg
               systemctl start taosd.service
               systemctl start taosadapter.service
+              systemctl enable taosadapter.service
               taos -h $dnodedns -P 6030 -s "CREATE DNODE '`hostname -f`:6030'"
               offlinednodeid=`taos -s "show dnodes" | awk -F '|' '$2 ~ /ip-/ && $5 ~ /offline/ {print $1}' | awk 'END {print $NF}'`
               if [ $offlinednodeid ]
@@ -478,6 +474,7 @@ Resources:
             sed -i '17 a firstEp    '`hostname -f`:6030'' /etc/taos/taos.cfg
             systemctl start taosd.service
             systemctl start taosadapter.service
+            systemctl enable taosadapter.service
             firstepinstanceid=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq .instanceId -r`
 
             # generate key for loginless ssh from firstep to other dnodes
@@ -517,7 +514,7 @@ Resources:
                 if ssh -i /TDengine/tdengine_key -o 'StrictHostKeyChecking=no' $ip stat /etc/taos/taos.cfg \> /dev/null 2\>\&1
                 then
                   echo "taos config existed in $ip." >> /TDengine/log
-                  ssh -i /TDengine/tdengine_key -o 'StrictHostKeyChecking=no' $ip "sudo sed -i '17 a firstEp    `hostname -f`:6030' /etc/taos/taos.cfg; sudo systemctl start taosd.service; sudo systemctl start taosadapter.service"
+                  ssh -i /TDengine/tdengine_key -o 'StrictHostKeyChecking=no' $ip "sudo sed -i '17 a firstEp    `hostname -f`:6030' /etc/taos/taos.cfg; sudo systemctl start taosd.service; sudo systemctl start taosadapter.service; sudo systemctl enable taosadapter.service"
                   aws ec2 create-tags --resources $instance --tags 'Key=TDengine-tag,Value=In-TDengine-${AWS::StackId}'
                   break
                 else

@@ -19,9 +19,8 @@ For more information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/U
 
 *Q.* Dnodes hasn't been launched.
 
-*A.* We recommend you don't ssh into EC2 instances while initializing.
+*A.* We recommend you do not ssh into EC2 instances while EC2 status is under initializing status.
 
 *Q.* How to deploy in China Region.
 
 *A.* China region use the same templates.
-

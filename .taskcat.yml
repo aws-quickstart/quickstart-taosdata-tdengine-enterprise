@@ -2,7 +2,7 @@ project:
   name: quickstart-taosdata-tdengine-enterprise
   owner: quickstart-eng@amazon.com
   regions:
-    #- af-south-1
+    - af-south-1
     - ap-east-1
     - ap-northeast-1
     - ap-northeast-2

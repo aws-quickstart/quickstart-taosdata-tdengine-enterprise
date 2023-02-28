@@ -215,12 +215,6 @@ Parameters:
     Description: Needs a description of what it is for
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     Type: String
-  #InstanceAmiId:
-  #  Type:  AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
-  #  Description: Instance AMI ID for TDEngine EC2 instance.
-  #  Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
-  #  AllowedValues:
-  #    - /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
   InstanceType:
     Description: EC2 instance type
     Type: String

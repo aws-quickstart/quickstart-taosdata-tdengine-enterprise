@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: TDengine Cluster Deployment Quick Start (qs-1tsfh53e9)
 Metadata:
+  cfn-lint: { config: { ignore_checks: [ W9002, W9003, W9004, W9006 ] } }
   LICENSE: Apache License Version 2.0
   QuickStartDocumentation:
     EntrypointName: Parameters for deploying the TDengine Cluster Quick Start into an existing VPC.
@@ -197,11 +198,8 @@ Parameters:
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     Type: String
   InstanceAmiId:
-    Type:  AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Type:  String
     Description: Instance AMI ID for TDEngine EC2 instance.
-    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
-    AllowedValues:
-      - /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
   InstanceType:
     Description: EC2 instance type.
     Type: String
@@ -244,7 +242,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
-        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template'
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion-entrypoint-existing-vpc.template.yaml'
         - S3Region: !If [ UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion ]
           S3Bucket: !If [ UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName ]
       Parameters:
@@ -383,7 +381,9 @@ Resources:
   TDengineEC2LaunchTemplate:
     Type: 'AWS::EC2::LaunchTemplate'
     Properties:
-      LaunchTemplateName: !Sub '${AWS::StackName}-tdengine-launch-template-for-auto-scaling'
+      LaunchTemplateName: !Sub
+          - ${StackID}-tdengine-launch-template-for-auto-scaling
+          - StackID: !Select [2, !Split [ /, !Ref AWS::StackId ]]
       LaunchTemplateData:
         NetworkInterfaces:
         - DeviceIndex: 0
@@ -596,7 +596,9 @@ Resources:
   TDengineNLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: !Sub '${AWS::StackName}-TDengine-NLB'
+      Name: !Sub
+        - ${StackID}-TDengine-NLB
+        - StackID: !Select [4, !Split [-, !Select [2, !Split [ /, !Ref AWS::StackId ]]]]
       IpAddressType: ipv4
       Scheme: internal
       Subnets:
@@ -643,8 +645,3 @@ Resources:
         - !Ref PrivateSubnet2ID
       TargetGroupARNs:
       - !Ref TDengineTargetGroup
-Outputs:
-  BastionIP:
-    Value: !GetAtt BastionStack.Outputs.BastionIP
-  BastionSecurityGroup:
-    Value: !GetAtt BastionStack.Outputs.BastionSecurityGroup

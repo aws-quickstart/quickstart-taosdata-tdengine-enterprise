@@ -1,11 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: TDengine Cluster Deployment Quick Start (qs-1tsfh53cc)
 Metadata:
-  QSLint:
-    Exclusions: [ W9002, W9003, W9004, W9006 ]
-    LICENSE: Apache License Version 2.0
-    QuickStartDocumentation:
-      EntrypointName: Parameters for deploying the TDengine Cluster Quick Start into a new VPC.
+  cfn-lint: { config: { ignore_checks: [ W9002, W9003, W9004, W9006 ] } }
+  LICENSE: Apache License Version 2.0
+  QuickStartDocumentation:
+    EntrypointName: Parameters for deploying the TDengine Cluster Quick Start into a new VPC.
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -14,8 +13,8 @@ Metadata:
           - AvailabilityZones
           - NumberOfAZs
           - VPCCIDR
-          - PrivateSubnet1CIDR
-          - PrivateSubnet2CIDR
+          - PrivateSubnet1ACIDR
+          - PrivateSubnet2ACIDR
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
       - Label:
@@ -43,7 +42,7 @@ Metadata:
       - Label:
           default: TDengine cluster configuration
         Parameters:
-          - InstanceAmiId
+         # - InstanceAmiId
           - InstanceType
           - DiskSize
           - NumberOfServers
@@ -52,9 +51,9 @@ Metadata:
         default: Availability Zones
       NumberOfAZs:
         default: Number of Availability Zones
-      PrivateSubnet1CIDR:
+      PrivateSubnet1ACIDR:
         default: Private subnet 1 CIDR
-      PrivateSubnet2CIDR:
+      PrivateSubnet2ACIDR:
         default: Private subnet 2 CIDR
       PublicSubnet1CIDR:
         default: Public subnet 1 CIDR
@@ -82,8 +81,8 @@ Metadata:
         default: S3 Bucket for DataTiering. By default, deploy ssd & s3 bucket two data tiering.
       EntDownloadLink:
         default: Enterprise download link
-      InstanceAmiId:
-        default: Instance AmiId
+      #InstanceAmiId:
+       # default: Instance AmiId
       InstanceType:
         default: Instance Type
       DiskSize:
@@ -99,13 +98,13 @@ Parameters:
     AllowedValues: [ "2" ]
     Default: "2"
     Description: Number of Availability Zones to use in the VPC. This must match the value entered for the AvailabilityZones parameter.
-  PrivateSubnet1CIDR:
+  PrivateSubnet1ACIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: Must be a valid IP range in the form x.x.x.x/x.
     Default: 10.0.0.0/19
     Description: 'CIDR block for private subnet 1, located in Availability Zone 1.'
     Type: String
-  PrivateSubnet2CIDR:
+  PrivateSubnet2ACIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: Must be a valid IP range in the form x.x.x.x/x.
     Default: 10.0.32.0/19
@@ -216,12 +215,12 @@ Parameters:
     Description: Needs a description of what it is for
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     Type: String
-  InstanceAmiId:
-    Type:  AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
-    Description: Instance AMI ID for TDEngine EC2 instance.
-    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
-    AllowedValues:
-      - /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+  #InstanceAmiId:
+  #  Type:  AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+  #  Description: Instance AMI ID for TDEngine EC2 instance.
+  #  Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+  #  AllowedValues:
+  #    - /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
   InstanceType:
     Description: EC2 instance type
     Type: String
@@ -274,25 +273,25 @@ Resources:
         NumberOfAZs: !Ref NumberOfAZs
         PublicSubnet1CIDR: !Ref PublicSubnet1CIDR
         PublicSubnet2CIDR: !Ref PublicSubnet2CIDR
-        PrivateSubnet1ACIDR: !Ref PrivateSubnet1CIDR
-        PrivateSubnet2ACIDR: !Ref PrivateSubnet2CIDR
+        PrivateSubnet1ACIDR: !Ref PrivateSubnet1ACIDR
+        PrivateSubnet2ACIDR: !Ref PrivateSubnet2ACIDR
         VPCCIDR: !Ref VPCCIDR
   TDEngineStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
-        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}/templates/tdengine-entrypoint-existing-vpc.template.yaml'
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/tdengine-entrypoint-existing-vpc.template.yaml'
         - S3Region: !If [ UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion ]
           S3Bucket: !If [ UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName ]
       Parameters:
         VPCID: !GetAtt VPCStack.Outputs.VPCID
         PublicSubnet1ID: !GetAtt VPCStack.Outputs.PublicSubnet1ID
         PublicSubnet2ID: !GetAtt VPCStack.Outputs.PublicSubnet2ID
-        PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1ID
-        PrivateSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2ID
+        PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
+        PrivateSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
         KeyPairName: !Ref KeyPairName
         QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-linux-bastion/'
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
         QSS3BucketRegion: !Ref QSS3BucketRegion
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
         NumBastionHosts: !Ref NumBastionHosts
@@ -300,12 +299,7 @@ Resources:
         BastionAMIOS: !Ref BastionAMIOS
         EntDownloadLink: !Ref EntDownloadLink
         ParamBucketName: !Ref ParamBucketName
-        InstanceAmiId: !Ref InstanceAmiId
+        InstanceAmiId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2}}'
         InstanceType: !Ref InstanceType
         NumberOfServers: !Ref NumberOfServers
         DiskSize: !Ref DiskSize
-Outputs:
-  BastionIP:
-    Value: !GetAtt TDEngineStack.Outputs.BastionIP
-  BastionSecurityGroup:
-    Value: !GetAtt TDEngineStack.Outputs.BastionSecurityGroup

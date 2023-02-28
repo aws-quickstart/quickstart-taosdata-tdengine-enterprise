@@ -34,5 +34,5 @@ tests:
   defaults:
     parameters:
       EntDownloadLink: https://www.tdengine.com/assets-download/3.0/TDengine-server-3.0.2.5-Linux-x64.tar.gz
-      ParamBucketName: $[taskcat_autobucket]
+      ParamBucketName: $[taskcat_random-string]
 

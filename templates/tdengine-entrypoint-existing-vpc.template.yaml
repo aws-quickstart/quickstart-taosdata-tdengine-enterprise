@@ -1,32 +1,43 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: TDengine Cluster Deployment Quick Start
+Description: TDengine Cluster Deployment Quick Start (qs-1tsfh53e9)
 Metadata:
+  cfn-lint: { config: { ignore_checks: [ W9002, W9003, W9004, W9006 ] } }
+  LICENSE: Apache License Version 2.0
   QuickStartDocumentation:
-    EntrypointName: Parameters for deploying the TDengine Cluster Quick Start
+    EntrypointName: Parameters for deploying the TDengine Cluster Quick Start into an existing VPC.
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
-          default: Global region or China region
+          default: VPC network configuration
         Parameters:
-          - AWSRegion
-      - Label:
-          default: Download Link
-        Parameters:
-          - EntDownlaodLink
-      - Label:
-          default: Network Configuration
-        Parameters:
-          - TDengineVPC
           - VPCCIDR
-          - PrivateSubnet1
-          - PrivateSubnet2
-          - PublicSubnet1
-          - PublicSubnet2
-          - SSHCIDR
+          - VPCID
+          - PrivateSubnet1ID
+          - PrivateSubnet2ID
+          - PublicSubnet1ID
+          - PublicSubnet2ID
+      - Label:
+          default: Quick Start configuration
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
+          - QSS3BucketRegion
+          - RemoteAccessCIDR
       - Label:
           default: EC2 configuration
         Parameters:
-          - InstanceKeyName
+          - KeyPairName
+      - Label:
+          default: Bastion configuration
+        Parameters:
+          - BastionAMIOS
+          - BastionInstanceType
+          - NumBastionHosts
+      - Label:
+          default: TDengine general configuration
+        Parameters:
+          - ParamBucketName
+          - EntDownloadLink
       - Label:
           default: TDengine cluster configuration
         Parameters:
@@ -34,92 +45,163 @@ Metadata:
           - InstanceType
           - DiskSize
           - NumberOfServers
-
     ParameterLabels:
-      EntDownlaodLink:
-        default: Enterprise download link
-      PublicSubnet1:
+      PublicSubnet1ID:
         default: Public subnet 1 ID
-      PublicSubnet2:
+      PublicSubnet2ID:
         default: Public subnet 2 ID
-      PrivateSubnet1:
+      PrivateSubnet1ID:
         default: Private subnet 1 ID
-      PrivateSubnet2:
-        default: Private subnet 2 ID     
-      TDengineVPC:
+      PrivateSubnet2ID:
+        default: Private subnet 2 ID
+      VPCID:
         default: VPC ID
       VPCCIDR:
         default: VPC CIDR
-      SSHCIDR:
-        default: SSH CIDR 
+      RemoteAccessCIDR:
+        default: Allowed bastion external access CIDR
+      KeyPairName:
+        default: Key-pair name
+      BastionAMIOS:
+        default: Bastion AMI OS
+      BastionInstanceType:
+        default: Bastion instance type
+      NumBastionHosts:
+        default: Number of bastion hosts
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3BucketRegion:
+        default: Quick Start S3 bucket Region
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+      ParamBucketName:
+        default: S3 bucket for DataTiering. By default, deploy ssd & s3 bucket two data tiering.
+      EntDownloadLink:
+        default: Enterprise download link
       InstanceAmiId:
         default: Instance AmiId
       InstanceType:
-        default: Instance Type
+        default: Instance type
       DiskSize:
-        default: Disk Size
-      InstanceKeyName:
-        default: Instance KeyName
+        default: Disk size
       NumberOfServers:
-        default: Number of Servers
-
+        default: Number of servers
 Parameters:
-  AWSRegion:
+  PublicSubnet1ID:
     Type: String
-    AllowedValues:
-      - amazonaws.com
-      - amazonaws.com.cn
-
-  EntDownlaodLink:
-    Description: Enterprise install package download link. If you have not, please contact https://www.taosdata.com/products#enterprise-edition-link .
-    Type: String
-
-  PublicSubnet1:
-    Type: "AWS::EC2::Subnet::Id"
     Description: ID of the public subnet in Availability Zone 1 of your existing VPC (for example, subnet-a0246dcd).
     Default: ""
-
-  PublicSubnet2:
-    Type: "AWS::EC2::Subnet::Id"
+  PublicSubnet2ID:
+    Type: String
     Description: ID of the public subnet in Availability Zone 2 of your existing VPC (for example, subnet-b1236eea).
     Default: ""
-
-  PrivateSubnet1:
+  PrivateSubnet1ID:
     Type: "AWS::EC2::Subnet::Id"
     Description: ID of the private subnet in Availability Zone 1 of your existing VPC (for example, subnet-fe9a8b32).
-
-  PrivateSubnet2:
+  PrivateSubnet2ID:
     Type: "AWS::EC2::Subnet::Id"
     Description: ID of the private subnet in Availability Zone 2 of your existing VPC (for example, subnet-fe9a8b32).
-
-  TDengineVPC:
+  VPCID:
     Type: "AWS::EC2::VPC::Id"
     Description: ID of your existing VPC (for example, vpc-0343606e).
-
   VPCCIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16–28
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: Must be a valid IP range in the form x.x.x.x/x.
     Default: 10.0.0.0/16
     Description: CIDR block for the VPC.
     Type: String
-
-  InstanceAmiId:
-    Type:  AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
-    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
-    AllowedValues:
-      - /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
-
-  SSHCIDR:
-    Description: SSH CIDR (Specify an address range from which ec2 instances are accessible on port 22. You can use 0.0.0.0/0 to allow access from any IP address)
+  RemoteAccessCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x.
+    Description: Allowed CIDR block for external secure shell (SSH) access to bastion hosts.
+    Default: 10.0.0.0/16
     Type: String
-    Default: 0.0.0.0/0
-    MinLength: 9
-    MaxLength: 18
-    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
-    ConstraintDescription: "must be a valid CIDR range of the form x.x.x.x/x."
-
+  KeyPairName:
+    Description: Key pairs allow you to connect to your instance after it launches.
+    Type: AWS::EC2::KeyPair::KeyName
+  BastionAMIOS:
+    AllowedValues:
+      - Amazon-Linux2-HVM
+      - CentOS-7-HVM
+      - Ubuntu-Server-20.04-LTS-HVM
+      - SUSE-SLES-15-HVM
+    Default: Amazon-Linux2-HVM
+    Description: Linux distribution for the AMI to be used for bastion instances.
+    Type: String
+  BastionInstanceType:
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+    Default: t3.micro
+    Description: Amazon EC2 instance type for bastion instances.
+    Type: String
+  NumBastionHosts:
+    AllowedValues:
+      - "1"
+      - "2"
+      - "3"
+      - "4"
+    Default: "1"
+    Description: Enter the number of bastion hosts to create.
+    Type: String
+  QSS3BucketName:
+    AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
+    ConstraintDescription:
+      The S3 bucket name can include numbers, lowercase letters, uppercase letters,
+      and hyphens (-), but it cannot start or end with a hyphen.
+    Default: aws-quickstart
+    Description:
+      'Name of the S3 bucket for your copy of the deployment assets. Keep the default
+        name unless you are customizing the template. Changing the name updates code
+        references to point to a new location.'
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: '^[0-9a-zA-Z-/]*$'
+    ConstraintDescription:
+      The S3 key prefix can include numbers, lowercase letters, uppercase letters,
+      hyphens (-), and forward slashes (/). End the prefix with a forward slash.
+    Default: quickstart-taosdata-tdengine-enterprise/
+    Description:
+      'S3 key prefix that is used to simulate a folder for your copy of the
+      deployment assets. Keep the default prefix unless you are customizing
+      the template. Changing the prefix updates code references to point to
+      a new location.'
+    Type: String
+  QSS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'AWS Region where the S3 bucket (QSS3BucketName) is hosted. Keep
+    the default Region unless you are customizing the template. Changing the Region
+    updates code references to point to a new location. When using your own bucket,
+    specify the Region.'
+    Type: String
+  EntDownloadLink:
+    Description: Enterprise install package download link. If you have not, please contact https://www.taosdata.com/products#enterprise-edition-link .
+    Type: String
+  ParamBucketName:
+    Description: Needs a description of what it is for.
+    AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
+    Type: String
+  InstanceAmiId:
+    Type:  String
+    Description: Instance AMI ID for TDEngine EC2 instance.
   InstanceType:
-    Description: EC2 instance type
+    Description: EC2 instance type.
     Type: String
     Default: t3.medium
     AllowedValues:
@@ -134,21 +216,14 @@ Parameters:
       - c5.9xlarge
       - c5.12xlarge
       - c5.18xlarge
-
   DiskSize:
-    Description: Size in GB of the EBS volume on each node
+    Description: Size in GB of the EBS volume on each node.
     Type: Number
     Default: 100
     MinValue: 10
     ConstraintDescription: "Minimum disk size should be 10"
-
-  InstanceKeyName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
-    Type: AWS::EC2::KeyPair::KeyName
-    ConstraintDescription: must be the name of an existing EC2 KeyPair.
-
   NumberOfServers:
-    Description: Must be 3 or greater to form a cluster
+    Description: Must be 3 or greater to form a cluster.
     Type: Number
     Default: 3
     AllowedValues:
@@ -160,24 +235,43 @@ Parameters:
       - 8
       - 9
       - 10
-
+Conditions:
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
 Resources:
+  BastionStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion-entrypoint-existing-vpc.template.yaml'
+        - S3Region: !If [ UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion ]
+          S3Bucket: !If [ UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName ]
+      Parameters:
+        VPCID: !Ref VPCID
+        PublicSubnet1ID: !Ref PublicSubnet1ID
+        PublicSubnet2ID: !Ref PublicSubnet2ID
+        KeyPairName: !Ref KeyPairName
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-linux-bastion/'
+        QSS3BucketRegion: !Ref QSS3BucketRegion
+        RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        NumBastionHosts: !Ref NumBastionHosts
+        BastionInstanceType: !Ref BastionInstanceType
+        BastionAMIOS: !Ref BastionAMIOS
   ExternalSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Enable SSH and TDengine External Ports
-      VpcId: !Ref TDengineVPC
+      VpcId: !Ref VPCID
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: 22
         ToPort: 22
-        CidrIp: !Ref SSHCIDR
-
+        CidrIp: !Ref RemoteAccessCIDR
   InternalSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Enable TDengine Internal Ports
-      VpcId: !Ref TDengineVPC
+      VpcId: !Ref VPCID
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: 22
@@ -191,7 +285,6 @@ Resources:
         FromPort: 6030
         ToPort: 6030
         CidrIp: !Ref VPCCIDR
-
   InternalSecurityGroupIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -199,43 +292,6 @@ Resources:
       GroupId: !Ref InternalSecurityGroup
       IpProtocol: -1
       SourceSecurityGroupId: !GetAtt InternalSecurityGroup.GroupId
-
-  BastionEC2LaunchTemplate:
-    Type: 'AWS::EC2::LaunchTemplate'
-    Properties:
-      LaunchTemplateName: !Sub '${AWS::StackName}-bastion-launch-template-for-auto-scaling'
-      LaunchTemplateData:
-        NetworkInterfaces:
-        - DeviceIndex: 0
-          AssociatePublicIpAddress: true
-          Groups:
-          - !Ref ExternalSecurityGroup
-          DeleteOnTermination: true
-        Placement:
-          Tenancy: default
-        ImageId: !Ref InstanceAmiId
-        KeyName: !Ref InstanceKeyName
-        InstanceType: t3.micro
-        BlockDeviceMappings:
-        - DeviceName: /dev/xvda
-          Ebs:
-            VolumeType: gp3
-            VolumeSize: 8
-            DeleteOnTermination: true
-
-  BastionEC2AutoScalingGroup:
-    Type: AWS::AutoScaling::AutoScalingGroup
-    Properties:
-      MinSize: 1
-      MaxSize: 1
-      DesiredCapacity: 1
-      LaunchTemplate:
-        LaunchTemplateId: !Ref BastionEC2LaunchTemplate
-        Version: !GetAtt BastionEC2LaunchTemplate.LatestVersionNumber
-      VPCZoneIdentifier:
-      - !Ref PublicSubnet1
-      - !Ref PublicSubnet2
-
   CacheParameterGroup:
     Type: 'AWS::ElastiCache::ParameterGroup'
     Properties:
@@ -243,15 +299,13 @@ Resources:
       CacheParameterGroupFamily: redis7
       Properties:
         maxmemory-policy: noeviction
-  
   CacheSubnetGroup:
     Type: AWS::ElastiCache::SubnetGroup
-    Properties: 
+    Properties:
       Description: cache-juicefs-subnet
-      SubnetIds: 
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2
-
+      SubnetIds:
+        - !Ref PrivateSubnet1ID
+        - !Ref PrivateSubnet2ID
   RedisReplicationGroup:
     Type: AWS::ElastiCache::ReplicationGroup
     Properties:
@@ -267,7 +321,17 @@ Resources:
       MultiAZEnabled: true
       SecurityGroupIds:
         - !GetAtt InternalSecurityGroup.GroupId
-
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AccessControl: BucketOwnerFullControl
+      BucketName: !Ref ParamBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
   TDengineIAMRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -280,8 +344,8 @@ Resources:
             - ec2.amazonaws.com
           Action:
           - 'sts:AssumeRole'
-      ManagedPolicyArns: 
-        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore 
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
       Path: /
       Policies:
       - PolicyName: TDengineIAMPolicy
@@ -289,7 +353,7 @@ Resources:
           Version: "2012-10-17"
           Statement:
           - Effect: Allow
-            Action: 
+            Action:
               - 'ec2:CreateTags'
             Resource: !Sub arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:instance/*
           - Effect: Allow
@@ -297,33 +361,31 @@ Resources:
               - 'ec2:DescribeInstances'
             Resource: '*'
           - Effect: Allow
-            Action: 
+            Action:
               - 's3:DeleteObject'
               - 's3:GetObject'
               - 's3:GetObjectAttributes'
               - 's3:PutObject'
-              - 's3:ListBucket'
-              - 's3:CreateBucket'
-            Resource: 
-              - !Sub arn:${AWS::Partition}:s3:::*               
-              - !Sub arn:${AWS::Partition}:s3:::*/*
+            Resource:
+              - !Sub arn:${AWS::Partition}:s3:::${S3Bucket}
+              - !Sub arn:${AWS::Partition}:s3:::${S3Bucket}/*
           - Effect: Allow
             Action: 'ssm:SendCommand'
-            Resource: 
+            Resource:
               - !Sub arn:${AWS::Partition}:ssm:*:*:document/*
               - !Sub arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:instance/*
-
   TDengineIAMProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
       Roles:
       - !Ref TDengineIAMRole
-
   TDengineEC2LaunchTemplate:
     Type: 'AWS::EC2::LaunchTemplate'
     Properties:
-      LaunchTemplateName: !Sub '${AWS::StackName}-tdengine-launch-template-for-auto-scaling'
+      LaunchTemplateName: !Sub
+          - ${StackID}-tdengine-launch-template-for-auto-scaling
+          - StackID: !Select [2, !Split [ /, !Ref AWS::StackId ]]
       LaunchTemplateData:
         NetworkInterfaces:
         - DeviceIndex: 0
@@ -337,7 +399,7 @@ Resources:
         Placement:
           Tenancy: default
         ImageId: !Ref InstanceAmiId
-        KeyName: !Ref InstanceKeyName
+        KeyName: !Ref KeyPairName
         InstanceType: !Ref InstanceType
         BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -367,13 +429,10 @@ Resources:
 
             mkdir -p /var/lib/s3/taos
             curl -sSL https://d.juicefs.com/install | sh -
-            yum install fuse -y
-
-            aws s3api create-bucket --bucket `hostname -s` --region $region --create-bucket-configuration LocationConstraint=$region
 
             juicefs format \
                 --storage s3 \
-                --bucket https://`hostname -s`.s3.$region.${AWSRegion} \
+                --bucket https://${S3Bucket.RegionalDomainName} \
                 redis://${RedisReplicationGroup.PrimaryEndPoint.Address}:6379/1 \
                 taosdata
 
@@ -381,11 +440,10 @@ Resources:
 
             # install TDengine
             su ec2-user <<EOSU
-
             SUB='tar.gz'
 
-            if [[ "${EntDownlaodLink}" == *"$SUB"* ]]; then
-              wget -O TDengine-enterprise-server.tar.gz "${EntDownlaodLink}"
+            if [[ "${EntDownloadLink}" == *"$SUB"* ]]; then
+              wget -O TDengine-enterprise-server.tar.gz "${EntDownloadLink}"
               mkdir /TDengine/TDengine-enterprise-server
               tar -xzvf TDengine-enterprise-server.tar.gz  -C /TDengine/TDengine-enterprise-server --strip-components 1
             fi
@@ -421,7 +479,6 @@ Resources:
               sed -i '17 a firstEp    '$dnodedns':6030' /etc/taos/taos.cfg
               systemctl start taosd.service
               systemctl start taosadapter.service
-              systemctl enable taosadapter.service
               taos -h $dnodedns -P 6030 -s "CREATE DNODE '`hostname -f`:6030'"
               offlinednodeid=`taos -s "show dnodes" | awk -F '|' '$2 ~ /ip-/ && $5 ~ /offline/ {print $1}' | awk 'END {print $NF}'`
               if [ $offlinednodeid ]
@@ -474,7 +531,6 @@ Resources:
             sed -i '17 a firstEp    '`hostname -f`:6030'' /etc/taos/taos.cfg
             systemctl start taosd.service
             systemctl start taosadapter.service
-            systemctl enable taosadapter.service
             firstepinstanceid=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq .instanceId -r`
 
             # generate key for loginless ssh from firstep to other dnodes
@@ -499,7 +555,7 @@ Resources:
               --parameters "commands=['echo $tdenginepk >> /home/ec2-user/.ssh/authorized_keys']"
             sleep 10
 
-            ip=`aws ec2 describe-instances \
+              ip=`aws ec2 describe-instances \
             --region $region --filters \
             "Name=instance-id,Values=$instance" \
             --query 'Reservations[*].Instances[*].[PrivateIpAddress]' \
@@ -514,7 +570,7 @@ Resources:
                 if ssh -i /TDengine/tdengine_key -o 'StrictHostKeyChecking=no' $ip stat /etc/taos/taos.cfg \> /dev/null 2\>\&1
                 then
                   echo "taos config existed in $ip." >> /TDengine/log
-                  ssh -i /TDengine/tdengine_key -o 'StrictHostKeyChecking=no' $ip "sudo sed -i '17 a firstEp    `hostname -f`:6030' /etc/taos/taos.cfg; sudo systemctl start taosd.service; sudo systemctl start taosadapter.service; sudo systemctl enable taosadapter.service"
+                  ssh -i /TDengine/tdengine_key -o 'StrictHostKeyChecking=no' $ip "sudo sed -i '17 a firstEp    `hostname -f`:6030' /etc/taos/taos.cfg; sudo systemctl start taosd.service; sudo systemctl start taosadapter.service"
                   aws ec2 create-tags --resources $instance --tags 'Key=TDengine-tag,Value=In-TDengine-${AWS::StackId}'
                   break
                 else
@@ -539,18 +595,18 @@ Resources:
                 taos -s "CREATE MNODE ON DNODE $lastdnodeip"
               fi
             done
-
   TDengineNLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: !Sub '${AWS::StackName}-TDengine-NLB'
+      Name: !Sub
+        - ${StackID}-TDengine-NLB
+        - StackID: !Select [4, !Split [-, !Select [2, !Split [ /, !Ref AWS::StackId ]]]]
       IpAddressType: ipv4
       Scheme: internal
       Subnets:
-      - !Ref PrivateSubnet1
-      - !Ref PrivateSubnet2      
+        - !Ref PrivateSubnet1ID
+        - !Ref PrivateSubnet2ID
       Type: network
-
   TDengineListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -562,7 +618,6 @@ Resources:
         Ref: TDengineNLB
       Port: 6041
       Protocol: TCP
-
   TDengineTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -574,12 +629,10 @@ Resources:
       Port: 6041
       Protocol: TCP
       TargetType: instance
-      VpcId:
-        Ref: TDengineVPC
+      VpcId: !Ref VPCID
       TargetGroupAttributes:
       - Key: deregistration_delay.timeout_seconds
         Value: 60
-
   TDengineEC2AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -590,7 +643,7 @@ Resources:
         LaunchTemplateId: !Ref TDengineEC2LaunchTemplate
         Version: !GetAtt TDengineEC2LaunchTemplate.LatestVersionNumber
       VPCZoneIdentifier:
-      - !Ref PrivateSubnet1
-      - !Ref PrivateSubnet2
+        - !Ref PrivateSubnet1ID
+        - !Ref PrivateSubnet2ID
       TargetGroupARNs:
       - !Ref TDengineTargetGroup

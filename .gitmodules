@@ -2,7 +2,7 @@
 	path = submodules/quickstart-aws-vpc
 	url = https://github.com/aws-quickstart/quickstart-aws-vpc
 	branch = main
-[submodule "submodules/quickstart-linux-bastion"]
-	path = submodules/quickstart-linux-bastion
+[submodule "submodules/quickstart-liux-bastion"]
+	path = submodules/quickstart-liux-bastion
 	url = https://github.com/aws-quickstart/quickstart-linux-bastion
 	branch = main

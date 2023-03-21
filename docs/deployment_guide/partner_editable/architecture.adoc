@@ -8,7 +8,7 @@ AWS Cloud.
 [#architecture1]
 .Quick Start architecture for _{partner-product-name}_ on AWS
 [link=images/architecture_diagram.png]
-image::../images/architecture_diagram.png[Architecture]
+image::../docs/deployment_guide/images/architecture_diagram.png[Architecture]
 
 As shown in <<architecture1>>, this Partner Solution sets up the following:
 
@@ -24,6 +24,6 @@ Shell (SSH) access to Amazon Elastic Compute Cloud (Amazon EC2) instances in pub
 ** The TDengine cluster that spans at two Availability Zones with specified nnumber of data nodes.
 ** A network load balancer that pass RESTful requsts to the group of data nodes.
 ** A auto scaling group for scaling flexibility.
-** An ElastiCache replication group with master and replica nodes. 
+** An ElastiCache replication group with master and replica nodes.
 
 [.small]#* The template that deploys this Partner Solution into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#

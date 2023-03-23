@@ -21,9 +21,8 @@ internet access for resources in the private subnets.*
 ** A Linux bastion host in an Auto Scaling group to allow inbound Secure
 Shell (SSH) access to Amazon Elastic Compute Cloud (Amazon EC2) instances in public and private subnets.*
 * In the private subnets:
-** The TDengine cluster that spans at two Availability Zones with specified nnumber of data nodes.
+** The TDengine cluster nodes that span at two Availability Zones, in an auto scaling group for scaling flexibility.
 ** A network load balancer that pass RESTful requsts to the group of data nodes.
-** A auto scaling group for scaling flexibility.
-** An ElastiCache replication group with master and replica nodes.
+** An ElastiCache replication group with primary and replica nodes.
 
 [.small]#* The template that deploys this Partner Solution into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#

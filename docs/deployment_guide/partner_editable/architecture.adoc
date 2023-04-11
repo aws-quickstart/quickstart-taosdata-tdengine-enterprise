@@ -14,15 +14,17 @@ As shown in <<architecture1>>, this Partner Solution sets up the following:
 
 * A highly available architecture that spans two Availability Zones.*
 * A virtual private cloud (VPC) configured with public and private subnets, according to AWS best practices, to provide you with your own virtual network on AWS.*
-* A S3 bucket to server tired-storage supported in TDengine Enterprise Edition only.*
+//TODO Troy, I reworded this because the original wording was "... bucket to server tired-storage...". Please confirm that it's correct.
+* An Amazon Simple Storage Service (Amazon S3) bucket for server-tiered storage (supported in TDengine Enterprise Edition only).*
 * In the public subnets:
 ** Managed network address translation (NAT) gateways to allow outbound
 internet access for resources in the private subnets.*
 ** A Linux bastion host in an Auto Scaling group to allow inbound Secure
 Shell (SSH) access to Amazon Elastic Compute Cloud (Amazon EC2) instances in public and private subnets.*
 * In the private subnets:
-** The TDengine cluster nodes that span at two Availability Zones, in an auto scaling group for scaling flexibility.
-** A network load balancer that pass RESTful requsts to the group of data nodes.
-** An ElastiCache replication group with primary and replica nodes.
+//TODO Troy, should this say "instances" instead of "nodes"? The icon in the diagram for "Dnodes" is the resource icon for "Instances".
+** The TDengine cluster nodes that span two Availability Zones in an Auto Scaling group for scaling flexibility.
+** A network load balancer that passes RESTful requests to the group of data nodes.
+** An ElastiCache for Redis replication group with primary and replica nodes.
 
 [.small]#* The template that deploys this Partner Solution into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#

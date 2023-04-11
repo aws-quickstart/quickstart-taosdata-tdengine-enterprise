@@ -5,7 +5,7 @@ For troubleshooting common Partner Solution issues, refer to the https://fwd.aws
 // == Resources
 // Uncomment section and add links to any external resources that are specified by the partner.
 
-*Q.* I encountered a *CREATE_FAILED* error when I launched the Quick Start.
+*Q.* I encountered a *CREATE_FAILED* error when I launched the Partner Solution.
 
 *A.* If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with *Rollback on failure* set to *Disabled*. (This setting is under *Advanced* in the AWS CloudFormation console, *Options* page.) With this setting, the stack’s state is retained, and instances remain running so you can troubleshoot the issue.
 
@@ -19,8 +19,8 @@ For more information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/U
 
 *Q.* Dnodes hasn't been launched.
 
-*A.* We recommend you do not ssh into EC2 instances while EC2 status is under initializing status.
+//TODO Troy, I reworded this sentence because it didn't make sense as it was. Please confirm it's correct.*A.* We recommend you don't use SSH to access Amazon EC2 instances while the Amazon EC2 status is *initializing*.
 
-*Q.* How to deploy in China Region.
+*Q.* How to deploy in the China Region.
 
-*A.* China region use the same templates.
+*A.* The China Region uses the same templates.

@@ -2,6 +2,6 @@
 
 == Postdeployment steps
 
-To get start to use TDengine with testing data sets, you may refer to https://docs.tdengine.com/get-started/docker/#test-data-insert-performance[TDengine taosBenchmark^] as well as https://docs.tdengine.com/get-started/docker/#run-tdengine[Run TDengine^]
+To start using TDengine with testing data sets, refer to https://docs.tdengine.com/get-started/docker/#test-data-insert-performance[Test data insert performance^] and https://docs.tdengine.com/get-started/docker/#run-tdengine[Run TDengine^].
 
-You need to delete S3 bucketes mananually if you want to clear all resource deployed by this quickstart.
+Manually delete the S3 buckets if you want to clear all resource deployed by this Partner Solution.

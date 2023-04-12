@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: TDengine Cluster Deployment Quick Start (qs-1tsfh53cc)
+Description: TDengine Cluster Deployment Partner Solution (qs-1tsfh53cc).
 Metadata:
   cfn-lint: { config: { ignore_checks: [ W9002, W9003, W9004, W9006 ] } }
   LICENSE: Apache License Version 2.0
   QuickStartDocumentation:
-    EntrypointName: Parameters for deploying the TDengine Cluster Quick Start into a new VPC.
+    EntrypointName: Parameters to deploy TDengine Cluster Partner Solution into new VPC.
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -18,14 +18,14 @@ Metadata:
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
       - Label:
-          default: Quick Start configuration
+          default: Partner Solution configuration
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
           - QSS3BucketRegion
           - RemoteAccessCIDR
       - Label:
-          default: EC2 configuration
+          default: Amazon EC2 configuration
         Parameters:
           - KeyPairName
       - Label:
@@ -64,7 +64,7 @@ Metadata:
       RemoteAccessCIDR:
         default: Allowed bastion external access CIDR
       KeyPairName:
-        default: Key-pair name
+        default: Key pair name
       BastionAMIOS:
         default: Bastion AMI OS
       BastionInstanceType:
@@ -72,65 +72,65 @@ Metadata:
       NumBastionHosts:
         default: Number of bastion hosts
       QSS3BucketName:
-        default: Quick Start S3 bucket name
+        default: S3 bucket name
       QSS3BucketRegion:
-        default: Quick Start S3 bucket Region
+        default: S3 bucket Region
       QSS3KeyPrefix:
-        default: Quick Start S3 key prefix
+        default: S3 key prefix
       ParamBucketName:
-        default: S3 Bucket for DataTiering. By default, deploy ssd & s3 bucket two data tiering.
+        default: S3 bucket for DataTiering. By default, deploy SSD and S3 bucket two data tiering.
       EntDownloadLink:
         default: Enterprise download link
       #InstanceAmiId:
        # default: Instance AmiId
       InstanceType:
-        default: Instance Type
+        default: Instance type
       DiskSize:
-        default: Disk Size
+        default: Disk size
       NumberOfServers:
-        default: Number of Servers
+        default: Number of servers
 Parameters:
   AvailabilityZones:
-    Description: 'List of Availability Zones (AZs) to use for the VPC subnets. More AZs improve the availability of the system, and fewer AZs reduce the cost of data traffic between AZs).'
+    Description: 'List of Availability Zones (AZs) to use for VPC subnets. More AZs improve availability of the system and fewer AZs reduce cost of data traffic between AZs.'
     Type: List<AWS::EC2::AvailabilityZone::Name>
   NumberOfAZs:
     Type: String
     AllowedValues: [ "2" ]
     Default: "2"
-    Description: Number of Availability Zones to use in the VPC. This must match the value entered for the AvailabilityZones parameter.
+    Description: Number of Availability Zones to use in VPC. This must match the value entered for AvailabilityZones parameter.
   PrivateSubnet1ACIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    ConstraintDescription: Must be a valid IP range in the form x.x.x.x/x.
+    ConstraintDescription: Must be a valid IP range in the format x.x.x.x/x.
     Default: 10.0.0.0/19
     Description: 'CIDR block for private subnet 1, located in Availability Zone 1.'
     Type: String
   PrivateSubnet2ACIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    ConstraintDescription: Must be a valid IP range in the form x.x.x.x/x.
+    ConstraintDescription: Must be a valid IP range in the format x.x.x.x/x.
     Default: 10.0.32.0/19
     Description: '(Ignore if you chose one Availability Zone) CIDR block for private subnet 2, located in Availability Zone 2.'
     Type: String
   PublicSubnet1CIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    ConstraintDescription: Must be a valid IP range in the form x.x.x.x/x.
+    ConstraintDescription: Must be a valid IP range in the format x.x.x.x/x.
     Default: 10.0.128.0/20
     Description: 'CIDR block for public DMZ subnet 1, located in Availability Zone 1.'
     Type: String
   PublicSubnet2CIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    ConstraintDescription: Must be a valid IP range in the form x.x.x.x/x.
+    ConstraintDescription: Must be a valid IP range in the format x.x.x.x/x.
     Default: 10.0.144.0/20
     Description: (Ignore if you chose one Availability Zone) CIDR block for public DMZ subnet 2, located in Availability Zone 2.
     Type: String
   VPCCIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    ConstraintDescription: Must be a valid IP range in the form x.x.x.x/x.
+    ConstraintDescription: Must be a valid IP range in the format x.x.x.x/x.
     Default: 10.0.0.0/16
-    Description: CIDR block for the VPC.
+    Description: CIDR block for VPC.
     Type: String
   RemoteAccessCIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x.
+    ConstraintDescription: CIDR block parameter must be in the format x.x.x.x/x.
     Description: Allowed CIDR block for external Secure Shell (SSH) access to bastion hosts.
     Default: 10.0.0.0/16
     Type: String
@@ -144,7 +144,7 @@ Parameters:
       - Ubuntu-Server-20.04-LTS-HVM
       - SUSE-SLES-15-HVM
     Default: Amazon-Linux2-HVM
-    Description: Linux distribution for the AMI to be used for bastion instances.
+    Description: Linux distribution for AMI used for bastion instances.
     Type: String
   BastionInstanceType:
     AllowedValues:
@@ -176,47 +176,52 @@ Parameters:
       - "3"
       - "4"
     Default: "1"
-    Description: Enter the number of bastion hosts to create.
+    Description: Enter number of bastion hosts to create.
     Type: String
   QSS3BucketName:
-    AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
-    ConstraintDescription:
-      The S3 bucket name can include numbers, lowercase letters, uppercase letters,
+    AllowedPattern: ^[0-9a-z]+([0-9a-z-\.]*[0-9a-z])*$
+    ConstraintDescription: >-
+      The S3 bucket name can include numbers, lowercase letters, 
       and hyphens (-), but it cannot start or end with a hyphen.
     Default: aws-quickstart
-    Description:
-      'Name of the S3 bucket for your copy of the deployment assets. Keep the default
-        name unless you are customizing the template. Changing the name updates code
-        references to point to a new location.'
+    Description: >-
+      Name of the S3 bucket for your copy of the deployment assets. Keep the default
+      name unless you are customizing the template. Changing the name updates code 
+      references to point to a new location.
+    MinLength: 3
+    MaxLength: 63  
     Type: String
   QSS3KeyPrefix:
-    AllowedPattern: '^[0-9a-zA-Z-/]*$'
-    ConstraintDescription:
-      The S3 key prefix can include numbers, lowercase letters, uppercase letters,
-      hyphens (-), and forward slashes (/). End the prefix with a forward slash.
+    AllowedPattern: ^([0-9a-zA-Z!-_\.\*'\(\)/]+/)*$
+    ConstraintDescription: >-
+      The S3 key prefix can include numbers, lowercase letters, uppercase letters, 
+      hyphens (-), underscores (_), periods (.), asterisks (*), single quotes ('),
+      open parenthesis ((), close parenthesis ()), and forward slashes (/). End the
+      prefix with a forward slash.
     Default: quickstart-taosdata-tdengine-enterprise/
-    Description:
-      'S3 key prefix that is used to simulate a folder for your copy of the
-      deployment assets. Keep the default prefix unless you are customizing
-      the template. Changing the prefix updates code references to point to
-      a new location.'
+    Description: >-
+      S3 key prefix that is used to simulate a folder for your copy of the 
+      deployment assets. Keep the default prefix unless you are customizing 
+      the template. Changing the prefix updates code references to point to 
+      a new location.
     Type: String
   QSS3BucketRegion:
-    Default: 'us-east-1'
-    Description: 'AWS Region where the S3 bucket (QSS3BucketName) is hosted. Keep
-    the default Region unless you are customizing the template. Changing the Region
-    updates code references to point to a new location. When using your own bucket,
-    specify the Region.'
+    Default: us-east-1
+    Description: >-
+      AWS Region where the S3 bucket (QSS3BucketName) is hosted. Keep 
+      the default Region unless you are customizing the template. Changing the Region 
+      updates code references to point to a new location. When using your own bucket, 
+      specify the Region.
     Type: String
   EntDownloadLink:
-    Description: Enterprise install package download link. If you have not, please contact https://www.taosdata.com/products#enterprise-edition-link .
+    Description: Enterprise install package download link. For more information, refer to https://www.taosdata.com/products#enterprise-edition-link.
     Type: String
   ParamBucketName:
-    Description: Needs a description of what it is for
+    Description: Description of what it's for.
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     Type: String
   InstanceType:
-    Description: EC2 instance type
+    Description: EC2 instance type.
     Type: String
     Default: t3.medium
     AllowedValues:
@@ -232,13 +237,13 @@ Parameters:
       - c5.12xlarge
       - c5.18xlarge
   DiskSize:
-    Description: Size in GB of the EBS volume on each node
+    Description: Size (in GB) of EBS volume on each node.
     Type: Number
     Default: 100
     MinValue: 10
-    ConstraintDescription: "Minimum disk size should be 10"
+    ConstraintDescription: "Minimum disk size is 10."
   NumberOfServers:
-    Description: Must be 3 or greater to form a cluster
+    Description: Must be 3 or more to form a cluster.
     Type: Number
     Default: 3
     AllowedValues:

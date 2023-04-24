@@ -15,6 +15,8 @@ As shown in <<architecture1>>, this Partner Solution sets up the following:
 * A highly available architecture that spans two Availability Zones.*
 * A virtual private cloud (VPC) configured with public and private subnets, according to AWS best practices, to provide you with your own virtual network on AWS.*
 * An Amazon Simple Storage Service (Amazon S3) bucket for server-tiered storage (supported in TDengine Enterprise Edition only).*
+* AWS IAM, to manage access to the needed resources.
+
 * In the public subnets:
 ** Managed network address translation (NAT) gateways to allow outbound
 internet access for resources in the private subnets.*

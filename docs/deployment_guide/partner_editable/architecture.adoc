@@ -20,8 +20,8 @@ internet access for resources in the private subnets.*
 ** A Linux bastion host in an Auto Scaling group to allow inbound Secure
 Shell (SSH) access to Amazon Elastic Compute Cloud (Amazon EC2) instances in public and private subnets.*
 * In the private subnets:
-** The TDengine cluster nodes that span two Availability Zones in an Auto Scaling group for scaling flexibility.
-** A Network Load Balancer that passes RESTful requests to the group of data nodes (Dnodes).
+** The TDengine cluster nodes in an Auto Scaling group.
+** A Network Load Balancer that passes RESTful requests to the group of data nodes.
 ** An ElastiCache for Redis replication group with primary and replica nodes.
 * An Amazon Simple Storage Service (Amazon S3) bucket for server-tiered storage (supported in TDengine Enterprise Edition only).*
 * AWS Identity and Access Management (IAM) to manage access to the needed resources.

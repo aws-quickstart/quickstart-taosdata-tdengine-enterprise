@@ -2,6 +2,6 @@
 
 == Predeployment steps
 
-To start the workshop, you must have an AWS account. If you do not have an account, sign up for one at https://aws.amazon.com/free/[Amazon Free Tier^]. Generate an Amazon EC2 key for the AWS Region you work in.
+To start the workshop, you must have an AWS account. If you do not have an account, sign up for one at https://aws.amazon.com/free/[Amazon Free Tier^]. Generate an Amazon EC2 key pair for the AWS Region the solution is deployed in.
 
-If you deploy in an existing VPC, ensure you've set up the NAT Gateway properly, including NAT resource, NATEIP, and RouteNATGateway. Otherwise, the cluster doesn't run as expected. 
+If you deploy in an existing VPC, verify you set up the NAT gateway, including NAT resource, NATEIP, and RouteNATGateway. Otherwise, the cluster doesn't run as expected. 

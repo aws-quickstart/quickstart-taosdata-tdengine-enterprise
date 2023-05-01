@@ -25,4 +25,5 @@ Shell (SSH) access to Amazon Elastic Compute Cloud (Amazon EC2) instances in pub
 ** An ElastiCache for Redis replication group with primary and replica nodes.
 * An Amazon Simple Storage Service (Amazon S3) bucket for server-tiered storage (supported in TDengine Enterprise Edition only).*
 * AWS Identity and Access Management (IAM) to manage access to the needed resources.
+
 [.small]#* The template that deploys this Partner Solution into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#

@@ -3,7 +3,7 @@
 :partner-product-name: TDengine Enterprise
 :partner-product-short-name: TDengine Enterprise
 :partner-company-name: Taos Data
-:doc-month: April
+:doc-month: May
 :doc-year: 2023
 :partner-contributors: Yiqing Liu and Hao Guo, {partner-company-name}
 // :other-contributors: Akua Mansa, Trek10

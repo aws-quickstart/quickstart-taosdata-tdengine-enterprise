@@ -3,12 +3,12 @@
 :partner-product-name: TDengine Enterprise
 :partner-product-short-name: TDengine Enterprise
 :partner-company-name: Taos Data
-:doc-month: Feb
+:doc-month: May
 :doc-year: 2023
-:partner-contributors: Yiqing Liu, Hao Guo, {partner-company-name}
+:partner-contributors: Yiqing Liu and Hao Guo, {partner-company-name}
 // :other-contributors: Akua Mansa, Trek10
-:aws-contributors: Wenjing Hu, AWS Partner SA, Chao Chen, AWS Migration SA
-//:aws-ia-contributors: Toni Jones, AWS Integration & Automation team
+:aws-contributors: Wenjing Hu, AWS Partner SA and Chao Chen, AWS Migration SA
+:aws-ia-contributors: Troyt Ameigh, AWS Integration & Automation team
 :deployment_time: 10-15 minutes
 :default_deployment_region: us-east-1
 // :private_repo:
